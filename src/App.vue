@@ -12,11 +12,38 @@
           class="progress-button"
           :style="{ width: progressWidth + 'px', height: progressWidth + 'px' }"
           @click="startCountdown"
-          v-if="inputText"
+          v-if="inputText && !remainingSeconds"
         >
           <span class="start-label" v-if="!remainingSeconds">Start</span>
           <span class="countdown" v-show="remainingSeconds > 0">{{ remainingSeconds }}</span>
         </div>
+        <circle-progress
+          class="progress-indicator"
+          v-show="remainingSeconds > 0"
+          :percent="percent"
+          :unit="'%'"
+          :viewport="true"
+          :show-percent="true"
+          :is-bg-shadow="true"
+          :is-gradient="true"
+          :gradient="{
+            angle: 180,
+            startColor: '#8f51fb',
+            stopColor: '#e151fb'
+          }"
+          :bg-shadow="{
+            inset: false,
+            vertical: 2,
+            horizontal: 2,
+            blur: 4,
+            opacity: 0.95,
+            color: '#000000'
+          }"
+          :size="80"
+          empty-color="#d6f4ff"
+          :border-width="14"
+          :border-bg-width="12"
+        />
       </div>
     </div>
 
@@ -25,17 +52,25 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { countdownProcess } from './utils/countdownProcess'
+import 'vue3-circle-progress/dist/circle-progress.css'
+import CircleProgress from 'vue3-circle-progress'
 
 export default {
+  components: { CircleProgress },
   setup() {
     const inputText = ref('')
     const seconds = ref(0)
-    const progressWidth = ref(100)
+    const progressWidth = ref(85)
     const remainingSeconds = ref(seconds.value)
     const showReversedText = ref(false)
     const reversedText = ref('')
+    const percent = ref(
+      computed(() => {
+        return (100 / seconds.value) * remainingSeconds.value
+      })
+    )
 
     const startCountdown = () =>
       countdownProcess(
@@ -52,6 +87,7 @@ export default {
     }
 
     return {
+      percent,
       inputText,
       seconds,
       startCountdown,
@@ -66,6 +102,18 @@ export default {
 </script>
 
 <style scoped>
+.progress-indicator {
+  font-weight: bold !important;
+  font-size: 16px;
+  color: #756e6e !important;
+}
+
+.current-counter {
+  &::after {
+    content: '%' !important;
+  }
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -148,6 +196,6 @@ export default {
   margin-top: 20px;
   font-size: 24px;
   font-weight: bold;
-  color: #f3f3f3;
+  color: #030202;
 }
 </style>
